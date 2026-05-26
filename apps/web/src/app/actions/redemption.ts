@@ -8,6 +8,7 @@
 import { createHash, randomBytes } from "crypto";
 import { ZeroDBClient } from "@zeromerch/zerodb";
 import type { RedemptionLink, Order, OrderItem } from "@zeromerch/zerodb";
+import { auditLogger } from "@zeromerch/audit";
 
 const PROJECT_ID =
   process.env["ZERODB_PROJECT_ID"] ?? "dcab7bc7-1ec1-4326-9dd4-ca7c80a499ec";
@@ -308,6 +309,17 @@ export async function claimGift(
     recipient_id: link.recipient_id,
     shipping_address: shippingAddress,
   });
+
+  // Audit: redemption link used — Story 13.1 (Issue #50)
+  await auditLogger.log({
+    company_id: link.company_id,
+    event_type: "redemption_link.used",
+    actor_type: "system",
+    actor_id: link.recipient_id,
+    object_type: "redemption_link",
+    object_id: link.id,
+    payload: { order_id: order.id, campaign_id: link.campaign_id },
+  }).catch(() => {});
 
   return {
     orderId: order.id,
