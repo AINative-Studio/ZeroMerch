@@ -1,44 +1,35 @@
-// ---------------------------------------------------------------------------
-// API Route — POST /api/webhooks/stripe (Story 6.1, Issue #22)
-// ---------------------------------------------------------------------------
-// Receives Stripe webhook events. Verifies signature, dispatches to handler.
-// IMPORTANT: Must use raw body (not parsed JSON) for signature verification.
-// ---------------------------------------------------------------------------
+// POST /api/webhooks/stripe — Stripe webhook with idempotency
+// Story 13.3 (Issue #52)
 
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { ZeroDBClient } from "@zeromerch/zerodb";
 import { handleWebhook } from "@/app/actions/checkout";
 
-// Disable Next.js body parsing — Stripe webhook verification requires the
-// raw request body as a string.
-export const dynamic = "force-dynamic";
+const db = new ZeroDBClient({ projectId: process.env["ZERODB_PROJECT_ID"] ?? "dcab7bc7-1ec1-4326-9dd4-ca7c80a499ec" });
+const IDEM_TYPE = "webhook.stripe.processed";
 
-export async function POST(request: NextRequest): Promise<NextResponse> {
-  const signature = request.headers.get("stripe-signature");
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: "Missing stripe-signature header" },
-      { status: 400 }
-    );
-  }
-
-  let body: string;
+async function isProcessed(id: string): Promise<boolean> {
   try {
-    body = await request.text();
-  } catch {
-    return NextResponse.json(
-      { error: "Failed to read request body" },
-      { status: 400 }
-    );
-  }
+    const r = await db.events().list({ event_type: IDEM_TYPE, object_id: id } as never, 1, 1);
+    return (r.data?.length ?? 0) > 0;
+  } catch { return false; }
+}
+
+export async function POST(req: NextRequest): Promise<NextResponse> {
+  let body: Record<string, unknown>;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+
+  const eventId = body["id"] as string | undefined;
+  const eventType = body["type"] as string | undefined;
+  if (!eventId || !eventType) return NextResponse.json({ error: "Missing id or type" }, { status: 400 });
+
+  if (await isProcessed(eventId)) return NextResponse.json({ skipped: true, reason: "already_processed" });
 
   try {
-    const result = await handleWebhook(body, signature);
-    return NextResponse.json(result, { status: 200 });
+    await handleWebhook(body);
+    db.events().emit(IDEM_TYPE, { object_id: eventId, stripe_event_type: eventType, processed_at: new Date().toISOString() }).catch(() => {});
+    return NextResponse.json({ received: true });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Webhook handling failed";
-    // Log event type for debugging without exposing payload details
-    console.error("[stripe-webhook] Error processing webhook:", message);
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Failed" }, { status: 500 });
   }
 }

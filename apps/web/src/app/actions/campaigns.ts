@@ -9,6 +9,7 @@ import { ZeroDBClient } from "@zeromerch/zerodb";
 import { getSession } from "@zeromerch/auth";
 import { redirect } from "next/navigation";
 import type {
+import { auditLogger } from "@zeromerch/audit";
   Campaign,
   CampaignProduct,
   CampaignType,
@@ -285,6 +286,18 @@ export async function publishCampaign(
     }
 
     const updated = await campaignsTable.update(id, { status: "active" });
+
+    // Audit: campaign published — Story 13.1 (Issue #50)
+    await auditLogger.log({
+      company_id: campaign.company_id,
+      event_type: "campaign.published",
+      actor_type: "user",
+      actor_id: session.userId,
+      object_type: "campaign",
+      object_id: id,
+      payload: { name: campaign.name ?? id },
+    }).catch(() => {});
+
     return { campaign: updated as Campaign };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to publish campaign";

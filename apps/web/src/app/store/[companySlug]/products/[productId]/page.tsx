@@ -1,4 +1,6 @@
 // Story 5.2 — Product Detail Page (Issue #19)
+// Story 13.3 — ISR: revalidate product pages every 300 seconds (Issue #52)
+export const revalidate = 300;
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getServerZeroDBClient } from "@/lib/zerodb-server";

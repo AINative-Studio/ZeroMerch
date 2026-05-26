@@ -1,4 +1,7 @@
 // Story 5.1 — Company Storefront (Issue #18)
+// Story 13.3 — ISR: revalidate every 60 seconds (Issue #52)
+export const revalidate = 60;
+
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { StorefrontClient } from "./storefront-client";

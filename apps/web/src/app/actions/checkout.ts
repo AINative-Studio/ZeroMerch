@@ -9,6 +9,7 @@ import { StripeClient } from "@zeromerch/payments";
 import type { CartItem } from "@zeromerch/payments";
 import type { Order, OrderItem } from "@zeromerch/zerodb";
 import { headers } from "next/headers";
+import { auditLogger } from "@zeromerch/audit";
 
 const PROJECT_ID =
   process.env["ZERODB_PROJECT_ID"] ?? "dcab7bc7-1ec1-4326-9dd4-ca7c80a499ec";
@@ -156,6 +157,17 @@ export async function createCheckoutSession(
   await ordersTable.update(order.id, {
     stripe_checkout_session_id: session.sessionId,
   });
+
+  // Audit: order created — Story 13.1 (Issue #50)
+  await auditLogger.log({
+    company_id: order.company_id,
+    event_type: "order.created",
+    actor_type: "user",
+    actor_id: order.recipient_id ?? "unknown",
+    object_type: "order",
+    object_id: order.id,
+    payload: { campaign_id: order.campaign_id, total: order.total },
+  }).catch(() => {});
 
   return {
     url: session.url,
