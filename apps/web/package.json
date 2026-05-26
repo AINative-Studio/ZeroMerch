@@ -27,7 +27,8 @@
     "qrcode": "^1.5.4",
     "react-dom": "^18.3.1",
     "tailwind-merge": "^2.6.0",
-    "@zeromerch/audit": "workspace:*"
+    "@zeromerch/audit": "workspace:*",
+    "@zeromerch/agents": "workspace:*"
   },
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.16",
