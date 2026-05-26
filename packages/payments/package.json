@@ -1,0 +1,22 @@
+{
+  "name": "@zeromerch/payments",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Stripe payment utilities for ZeroMerch",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts"
+  },
+  "dependencies": {
+    "stripe": "^14.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "typescript": "^5.4.5"
+  }
+}
