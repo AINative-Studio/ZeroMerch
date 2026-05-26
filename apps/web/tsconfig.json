@@ -21,7 +21,9 @@
     "paths": {
       "@/*": ["./src/*"],
       "@zeromerch/ui": ["../../packages/ui/src/index.ts"],
-      "@zeromerch/shared": ["../../packages/shared/src/index.ts"]
+      "@zeromerch/shared": ["../../packages/shared/src/index.ts"],
+      "@zeromerch/auth": ["../../packages/auth/src/index.ts"],
+      "@zeromerch/auth/*": ["../../packages/auth/src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

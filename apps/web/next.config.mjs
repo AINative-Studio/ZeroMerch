@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  transpilePackages: ["@zeromerch/ui", "@zeromerch/shared"],
+  transpilePackages: ["@zeromerch/ui", "@zeromerch/shared", "@zeromerch/auth"],
   images: {
     remotePatterns: [
       {
