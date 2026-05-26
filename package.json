@@ -1,0 +1,20 @@
+{
+  "name": "zeromerch",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter \"./apps/*\" build",
+    "dev": "pnpm --filter \"./apps/*\" dev",
+    "lint": "pnpm --filter \"./apps/*\" lint && pnpm --filter \"./packages/*\" lint",
+    "type-check": "pnpm --filter \"./apps/*\" type-check && pnpm --filter \"./packages/*\" type-check",
+    "clean": "pnpm --filter \"./apps/*\" clean && pnpm --filter \"./packages/*\" clean"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "packageManager": "pnpm@11.3.0"
+}
