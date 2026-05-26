@@ -19,29 +19,39 @@ This backlog is optimized for:
 
 ---
 
-# Sprint Structure
+# Batching Strategy
 
-| Sprint    | Focus                          |
-| --------- | ------------------------------ |
-| Sprint 0  | Foundation + Architecture      |
-| Sprint 1  | Multi-Tenant Platform          |
-| Sprint 2  | Product Catalog + Storefront   |
-| Sprint 3  | Checkout + Redemption          |
-| Sprint 4  | AI Merch Concierge             |
-| Sprint 5  | Campaigns + Event Drops        |
-| Sprint 6  | Budget + Approval Engine       |
-| Sprint 7  | Agent Memory + Semantic Search |
-| Sprint 8  | Vendor + Fulfillment           |
-| Sprint 9  | Analytics + Optimization       |
-| Sprint 10 | Enterprise Hardening           |
+Stories are grouped into **batches** based on shared data model dependencies, parallel agent execution opportunities, and technical coupling. Batching reduces context-switching overhead and allows multi-agent workflows to proceed without blocking.
+
+**Batching rules applied:**
+- Stories that write to the same ZeroDB collections are grouped
+- Stories that share the same UI surface are grouped
+- Stories that have agent/service coupling are grouped
+- Stories that have hard sequential dependencies are split into separate batches within a sprint
 
 ---
 
-# EPIC 1 — Platform Foundation
+# Sprint Structure (Revised)
 
-## Goal
+| Sprint   | Focus                                | Batches |
+| -------- | ------------------------------------ | ------- |
+| Sprint 0 | Foundation + Architecture            | A, B    |
+| Sprint 1 | Tenant Platform + Brand Kit          | C, D    |
+| Sprint 2 | Product Catalog + Storefront         | E, F    |
+| Sprint 3 | Checkout + Redemption                | G       |
+| Sprint 4 | Campaign Engine                      | H       |
+| Sprint 5 | AI Concierge + Budget Engine         | I, J    |
+| Sprint 6 | Agent Memory + Semantic Intelligence | K       |
+| Sprint 7 | Vendor + Fulfillment                 | L       |
+| Sprint 8 | Analytics + Enterprise Hardening     | M, N    |
 
-Establish reusable infrastructure using existing AINative systems.
+---
+
+# BATCH A — Platform Scaffold
+**Sprint 0 | Parallel execution: Frontend agent + ZeroDB agent run simultaneously**
+
+> Stories 1.1 and 1.2 have no dependencies on each other and can be built in parallel.
+> Auth (1.3) can begin once the ZeroDB environment is up.
 
 ---
 
@@ -92,6 +102,14 @@ As a platform engineer, I want ZeroDB configured as the primary data layer so th
 
 ---
 
+# BATCH B — Authentication
+**Sprint 0 | Depends on: Batch A (ZeroDB + frontend scaffold must exist)**
+
+> Auth integrates with the ZeroDB user model and the frontend wrapper simultaneously.
+> Blocked until 1.2 ZeroDB namespaces are live.
+
+---
+
 ## User Story 1.3 — Configure Auth
 
 ### Story
@@ -116,7 +134,12 @@ As an enterprise user, I want secure authentication so that companies can manage
 
 ---
 
-# EPIC 2 — Multi-Tenant Company Management
+# BATCH C — Company Workspace + Brand Foundation
+**Sprint 1 | Depends on: Batch B (Auth) | Parallel: company setup and brand kit upload run together**
+
+> `companies`, `brand_kits`, and `design_assets` are written together.
+> Company creation (2.1) and brand asset upload (3.1 + 3.2) share the same ZeroDB collections
+> and are configured by the same admin persona — batch them to avoid two separate admin onboarding flows.
 
 ---
 
@@ -134,41 +157,6 @@ As an admin, I want to create a branded company workspace.
 * Brand kit attachable
 * Default budget created
 * Company isolation enforced
-
----
-
-## User Story 2.2 — Invite Team Members
-
-### Story
-
-As an admin, I want to invite employees into my workspace.
-
-### Acceptance Criteria
-
-* Email invitation flow works
-* Roles assignable
-* Departments assignable
-* Duplicate emails prevented
-* Invitation expiration enforced
-
----
-
-## User Story 2.3 — Department Management
-
-### Story
-
-As an admin, I want departments for budget governance.
-
-### Acceptance Criteria
-
-* Departments creatable
-* Managers assignable
-* Department budgets configurable
-* Users assignable to departments
-
----
-
-# EPIC 3 — Brand Kit System
 
 ---
 
@@ -203,23 +191,51 @@ As a marketing admin, I want brand governance rules.
 
 ---
 
-## User Story 3.3 — AI Brand Compliance Review
+# BATCH D — Team + Department Management
+**Sprint 1 | Depends on: Batch C (companies must exist) | Parallel: invitations and departments run together**
 
-### Story
-
-As a company admin, I want AI to review merch designs.
-
-### Acceptance Criteria
-
-* AI reviews submitted assets
-* Approval score generated
-* Violations surfaced
-* Human override available
-* Review history persisted
+> `company_users` and `departments` are tightly coupled — departments need managers (users),
+> users need department assignments. Build the full RBAC model in one batch.
 
 ---
 
-# EPIC 4 — Product Catalog
+## User Story 2.2 — Invite Team Members
+
+### Story
+
+As an admin, I want to invite employees into my workspace.
+
+### Acceptance Criteria
+
+* Email invitation flow works
+* Roles assignable
+* Departments assignable
+* Duplicate emails prevented
+* Invitation expiration enforced
+
+---
+
+## User Story 2.3 — Department Management
+
+### Story
+
+As an admin, I want departments for budget governance.
+
+### Acceptance Criteria
+
+* Departments creatable
+* Managers assignable
+* Department budgets configurable
+* Users assignable to departments
+
+---
+
+# BATCH E — Product Catalog + Search
+**Sprint 2 | Depends on: Batch B (ZeroDB env) | Parallel: sync job and embedding pipeline run together**
+
+> `products`, `product_variants`, and `product_embeddings` are populated by the same sync job.
+> Semantic search (4.2) is enabled the moment embeddings are written — no reason to split these
+> into separate sprints. Collections (4.3) extend the catalog model and ship in the same sprint.
 
 ---
 
@@ -255,9 +271,9 @@ As a user, I want semantic merch search.
 
 ### Example Queries
 
-* “premium developer hoodie”
-* “executive gifting”
-* “event swag”
+* "premium developer hoodie"
+* "executive gifting"
+* "event swag"
 
 ---
 
@@ -276,7 +292,12 @@ As an admin, I want curated merch collections.
 
 ---
 
-# EPIC 5 — Storefront Experience
+# BATCH F — Storefront + Shopping Cart
+**Sprint 2 | Depends on: Batch E (products must be synced) | Parallel: storefront, PDP, and cart are one UI build**
+
+> The company storefront (5.1), product detail page (5.2), and cart (5.3) are a single
+> end-to-end frontend build. No meaningful reason to split them — they share state,
+> routing, and the same AIKit component surface.
 
 ---
 
@@ -327,7 +348,12 @@ As a user, I want to manage my cart.
 
 ---
 
-# EPIC 6 — Checkout + Redemption
+# BATCH G — Checkout + Redemption System
+**Sprint 3 | Depends on: Batch F (cart must exist) | All three share Stripe + redemption_links + orders**
+
+> Stripe checkout (6.1), employee credits (6.2), and gift redemption (6.3) all write to
+> `orders`, `order_items`, and `redemption_links`. Splitting them creates incomplete checkout
+> flows in each sprint. Build the entire payment and redemption surface together.
 
 ---
 
@@ -378,7 +404,13 @@ As a recipient, I want a frictionless gift claim experience.
 
 ---
 
-# EPIC 7 — Campaign Engine
+# BATCH H — Campaign Engine + Event Drops
+**Sprint 4 | Depends on: Batch G (orders + redemption must exist) | All three build the campaigns table**
+
+> Campaign creation (7.1), event drops (7.2), and scheduled activation (7.3) all operate
+> on `campaigns`, `campaign_products`, and `redemption_links`. Event drops are a campaign
+> subtype, not a separate system. Schedule logic is part of campaign state management.
+> One agent can own the full campaign lifecycle.
 
 ---
 
@@ -428,7 +460,12 @@ As an admin, I want automated campaign activation.
 
 ---
 
-# EPIC 8 — AI Merch Concierge
+# BATCH I — AI Merch Concierge
+**Sprint 5 | Depends on: Batch H (campaigns must exist) | Chat and AI campaign gen share the same agent**
+
+> The conversational merch agent (8.1) and AI campaign generation (8.2) are the same
+> AgentSwarm workflow — the chat interface IS the campaign generation interface.
+> Splitting them would require building a half-functional agent twice.
 
 ---
 
@@ -464,22 +501,14 @@ As a marketer, I want AI-generated merch campaigns.
 
 ---
 
-## User Story 8.3 — AI Budget Recommendations
+# BATCH J — Budget Engine + AI Recommendations + Brand Compliance
+**Sprint 5 | Depends on: Batch C (companies), Batch I (AI agent live) | Budget system and AI recs are co-dependent**
 
-### Story
-
-As finance, I want AI spending recommendations.
-
-### Acceptance Criteria
-
-* Spend forecasting generated
-* Overages predicted
-* Department anomalies detected
-* Cost optimization suggestions surfaced
-
----
-
-# EPIC 9 — Budget + Governance
+> Budget creation (9.1), approvals (9.2), and enforcement (9.3) are one system — `budgets`
+> and `approval_requests` tables are written together and the UI is a single admin surface.
+> AI budget recommendations (8.3) require the budget system to exist AND the concierge
+> agent to be live, so it ships in the same sprint as the budget engine.
+> AI brand compliance review (3.3) requires the agent infrastructure from Batch I — moved here.
 
 ---
 
@@ -528,7 +557,49 @@ As finance, I want hard budget enforcement.
 
 ---
 
-# EPIC 10 — Agent Memory + Semantic Intelligence
+## User Story 8.3 — AI Budget Recommendations
+
+### Story
+
+As finance, I want AI spending recommendations.
+
+### Acceptance Criteria
+
+* Spend forecasting generated
+* Overages predicted
+* Department anomalies detected
+* Cost optimization suggestions surfaced
+
+---
+
+## User Story 3.3 — AI Brand Compliance Review
+
+### Story
+
+As a company admin, I want AI to review merch designs.
+
+### Acceptance Criteria
+
+* AI reviews submitted assets
+* Approval score generated
+* Violations surfaced
+* Human override available
+* Review history persisted
+
+### Note
+
+> Moved from Sprint 1 — requires AgentSwarm infrastructure (Batch I) and brand kit
+> foundation (Batch C) to both be live before this agent can be wired up.
+
+---
+
+# BATCH K — Agent Memory + Semantic Intelligence
+**Sprint 6 | Depends on: Batch I (agent live), Batch H (campaigns exist) | All three use ZeroMemory + vector collections**
+
+> Agent memory persistence (10.1), semantic campaign search (10.2), and preference
+> learning (10.3) all write to `agent_memories`, `campaign_embeddings`, and
+> `product_embeddings`. These are one ZeroMemory integration sprint — the same
+> SDK calls power all three capabilities.
 
 ---
 
@@ -578,7 +649,13 @@ As a recipient, I want recommendations personalized.
 
 ---
 
-# EPIC 11 — Vendor + Fulfillment
+# BATCH L — Vendor + Fulfillment Stack
+**Sprint 7 | Depends on: Batch G (orders must exist) | All three share vendors + shipments tables**
+
+> Vendor management (11.1), shipment tracking (11.2), and inventory alerts (11.3) build
+> the `vendors`, `vendor_products`, and `shipments` collections together. Tracking requires
+> vendors to exist; inventory alerts are a property of `product_variants` reorder thresholds.
+> One fulfillment agent owns the full lifecycle.
 
 ---
 
@@ -625,7 +702,13 @@ As operations, I want low inventory alerts.
 
 ---
 
-# EPIC 12 — Analytics + Reporting
+# BATCH M — Analytics + Reporting
+**Sprint 8 | Depends on: Batches G, H, J (orders, campaigns, budgets must have data) | All read-only dashboards**
+
+> Campaign analytics (12.1), department spend (12.2), and AI insights (12.3) are all
+> read-only aggregation views over existing data. They share the same dashboard surface
+> and the same ZeroDB query patterns. AI insights (12.3) are a concierge agent call
+> over the analytics data — same sprint as the dashboards they analyze.
 
 ---
 
@@ -673,7 +756,13 @@ As leadership, I want AI-generated operational recommendations.
 
 ---
 
-# EPIC 13 — Enterprise Hardening
+# BATCH N — Enterprise Hardening
+**Sprint 8 | Depends on: All prior batches complete | Cross-cutting concerns applied globally**
+
+> Audit logging (13.1), GDPR (13.2), and performance optimization (13.3) are cross-cutting
+> concerns that must be applied after the full feature surface exists. They cannot be
+> meaningfully batched earlier because they instrument and harden a system that doesn't
+> fully exist yet. All three can run in parallel — different agents, no shared state.
 
 ---
 
@@ -721,6 +810,63 @@ As a platform engineer, I want scalable performance.
 
 ---
 
+# Batch Dependency Graph
+
+```
+Batch A (1.1, 1.2) ──────────────────────────────┐
+                                                   ▼
+Batch B (1.3) ──────────────────────────────────► Batch C (2.1, 3.1, 3.2)
+                                                         │
+                                                         ▼
+                                                   Batch D (2.2, 2.3)
+
+Batch A (1.2) ──► Batch E (4.1, 4.2, 4.3)
+                         │
+                         ▼
+                   Batch F (5.1, 5.2, 5.3)
+                         │
+                         ▼
+                   Batch G (6.1, 6.2, 6.3)
+                         │
+                         ▼
+                   Batch H (7.1, 7.2, 7.3)
+                         │
+                         ▼
+                   Batch I (8.1, 8.2) ──► Batch K (10.1, 10.2, 10.3)
+                         │
+                         ▼
+            Batch J (9.1, 9.2, 9.3, 8.3, 3.3)
+                         │
+                         ▼
+                   Batch G ──► Batch L (11.1, 11.2, 11.3)
+
+Batches G + H + J ──► Batch M (12.1, 12.2, 12.3)
+All batches ──────► Batch N (13.1, 13.2, 13.3)
+```
+
+---
+
+# Agent Assignment by Batch
+
+| Batch | Agent(s)                          |
+| ----- | --------------------------------- |
+| A     | Frontend Agent + Data Agent       |
+| B     | Frontend Agent                    |
+| C     | Frontend Agent + Data Agent       |
+| D     | Frontend Agent + Data Agent       |
+| E     | Commerce Agent + Data Agent       |
+| F     | Frontend Agent + Commerce Agent   |
+| G     | Commerce Agent + Data Agent       |
+| H     | Commerce Agent + Data Agent       |
+| I     | AI Concierge Agent                |
+| J     | AI Concierge Agent + Data Agent   |
+| K     | Memory Agent + Data Agent         |
+| L     | Fulfillment Agent + Commerce Agent|
+| M     | Analytics Agent + AI Concierge    |
+| N     | DevOps Agent + QA Agent           |
+
+---
+
 # Definition of Done (Global)
 
 Every story must include:
@@ -738,37 +884,19 @@ Every story must include:
 
 ---
 
-# AI Agent Execution Strategy
+# MVP Priority Batches
 
-## Suggested Specialized Agents
+Batches required for a functional enterprise merch platform:
 
-| Agent             | Responsibility           |
-| ----------------- | ------------------------ |
-| Frontend Agent    | AIKit UI                 |
-| Commerce Agent    | ZeroCommerce integration |
-| Data Agent        | ZeroDB schemas           |
-| Memory Agent      | Semantic retrieval       |
-| QA Agent          | TDD/BDD                  |
-| DevOps Agent      | CI/CD                    |
-| Brand Agent       | Compliance               |
-| Analytics Agent   | Dashboards               |
-| Fulfillment Agent | Shipping workflows       |
+1. **Batch A** — Frontend scaffold + ZeroDB env
+2. **Batch B** — Auth
+3. **Batch C** — Company workspace + brand kit
+4. **Batch E** — Product catalog + search
+5. **Batch F** — Storefront + cart
+6. **Batch G** — Checkout + redemption
+7. **Batch H** — Campaign engine
+8. **Batch I** — AI concierge
+9. **Batch J** (partial) — Budget creation + enforcement
+10. **Batch K** — Agent memory
 
----
-
-# MVP Priority Stories
-
-Highest priority:
-
-1. Company Workspaces
-2. Product Catalog
-3. Storefront
-4. Checkout
-5. Redemption Links
-6. Campaigns
-7. AI Concierge
-8. Budgets
-9. Memory
-10. Event Drops
-
-These alone create a functional enterprise AI-native merch platform with extremely low custom backend complexity.
+Batches D, L, M, N are post-MVP.
