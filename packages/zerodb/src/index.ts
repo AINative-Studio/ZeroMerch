@@ -43,6 +43,7 @@ export type {
   // Core tenant
   Company,
   CompanyUser,
+  Department,
   // Brand
   BrandKit,
   ComplianceRules,

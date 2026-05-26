@@ -27,8 +27,20 @@ export interface CompanyUser {
   full_name: string;
   role: "admin" | "manager" | "employee" | "finance" | "vendor";
   department_id?: string;
-  status: "active" | "inactive";
+  status: "active" | "inactive" | "pending" | "revoked";
   sso_subject?: string;
+  expires_at?: string;
+  created_at: string;
+}
+
+// ─── Departments ─────────────────────────────────────────────────────────────
+
+export interface Department {
+  id: string;
+  company_id: string;
+  name: string;
+  budget_id?: string;
+  manager_user_id?: string;
   created_at: string;
 }
 
@@ -340,6 +352,7 @@ export interface AgentMemory {
 export interface CollectionTypeMap {
   companies: Company;
   company_users: CompanyUser;
+  departments: Department;
   brand_kits: BrandKit;
   design_assets: DesignAsset;
   products: Product;

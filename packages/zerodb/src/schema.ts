@@ -49,7 +49,7 @@ export const TABLE_COLLECTIONS: CollectionSchema[] = [
   {
     name: "company_users",
     kind: "table",
-    description: "Users belonging to a company",
+    description: "Users belonging to a company (active, pending invitation, or revoked)",
     fields: [
       { name: "company_id", type: "string", required: true, indexed: true },
       { name: "email", type: "string", required: true, indexed: true },
@@ -58,6 +58,19 @@ export const TABLE_COLLECTIONS: CollectionSchema[] = [
       { name: "department_id", type: "string", indexed: true },
       { name: "status", type: "string", required: true, indexed: true },
       { name: "sso_subject", type: "string" },
+      { name: "expires_at", type: "timestamp" },
+      { name: "created_at", type: "timestamp", required: true },
+    ],
+  },
+  {
+    name: "departments",
+    kind: "table",
+    description: "Organizational departments within a company",
+    fields: [
+      { name: "company_id", type: "string", required: true, indexed: true },
+      { name: "name", type: "string", required: true, indexed: true },
+      { name: "budget_id", type: "string", indexed: true },
+      { name: "manager_user_id", type: "string", indexed: true },
       { name: "created_at", type: "timestamp", required: true },
     ],
   },
