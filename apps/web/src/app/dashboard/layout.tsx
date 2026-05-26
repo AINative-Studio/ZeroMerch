@@ -5,6 +5,7 @@
 import { getSession } from "@zeromerch/auth";
 import { redirect } from "next/navigation";
 import { AuthProvider } from "@/components/auth-provider";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
 
 export default async function DashboardLayout({
   children,
@@ -21,17 +22,11 @@ export default async function DashboardLayout({
   return (
     <AuthProvider initialUser={session.user} initialToken={session.token}>
       <div className="flex min-h-[calc(100vh-8rem)]">
-        {/* Sidebar placeholder — will be built in a later batch */}
-        <aside className="hidden w-64 border-r border-border bg-muted/50 lg:block">
-          <nav className="space-y-1 p-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Dashboard
-            </p>
-          </nav>
-        </aside>
+        {/* Dashboard sidebar — Stories 12.1/12.2/12.3 (#46/#47/#48) */}
+        <DashboardSidebar />
 
         {/* Main content area */}
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 overflow-auto p-6">{children}</div>
       </div>
     </AuthProvider>
   );
