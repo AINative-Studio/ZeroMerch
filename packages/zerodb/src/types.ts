@@ -346,6 +346,22 @@ export interface AgentMemory {
   created_at: string;
 }
 
+// ─── Product Collections ─────────────────────────────────────────────────────
+
+export type CollectionVisibility = "all" | "department" | "campaign";
+
+export interface ProductCollection {
+  id: string;
+  company_id: string;
+  name: string;
+  description: string;
+  product_ids: string[];
+  visibility: CollectionVisibility;
+  allowed_department_ids: string[];
+  status: "active" | "archived";
+  created_at: string;
+}
+
 // ─── Generic operation types ─────────────────────────────────────────────────
 
 /** Map collection name to its row type */
@@ -357,6 +373,7 @@ export interface CollectionTypeMap {
   design_assets: DesignAsset;
   products: Product;
   product_variants: ProductVariant;
+  product_collections: ProductCollection;
   campaigns: Campaign;
   campaign_products: CampaignProduct;
   recipients: Recipient;
