@@ -54,6 +54,8 @@ export type {
   // Catalog
   Product,
   ProductVariant,
+  ProductCollection,
+  CollectionVisibility,
   // Campaigns
   Campaign,
   CampaignProduct,

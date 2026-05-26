@@ -1,0 +1,21 @@
+{
+  "name": "@zeromerch/commerce",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ZeroCommerce integration layer — product sync, variants, embeddings",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "lint": "tsc --noEmit",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@zeromerch/zerodb": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.5"
+  }
+}
