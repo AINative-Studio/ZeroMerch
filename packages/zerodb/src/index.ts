@@ -46,6 +46,10 @@ export type {
   // Brand
   BrandKit,
   ComplianceRules,
+  DesignAsset,
+  AssetType,
+  AssetUsageStatus,
+  AssetMetadata,
   // Catalog
   Product,
   ProductVariant,

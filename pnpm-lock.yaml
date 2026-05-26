@@ -32,6 +32,9 @@ importers:
       '@zeromerch/auth':
         specifier: workspace:*
         version: link:../../packages/auth
+      '@zeromerch/zerodb':
+        specifier: workspace:*
+        version: link:../../packages/zerodb
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

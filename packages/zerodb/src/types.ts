@@ -57,6 +57,31 @@ export interface BrandKit {
   updated_at: string;
 }
 
+export type AssetType = "logo" | "icon" | "pattern" | "mockup" | "print_file";
+export type AssetUsageStatus = "approved" | "pending" | "rejected";
+
+export interface AssetMetadata {
+  format: string;
+  original_name: string;
+  size_bytes: number;
+  dimensions?: string;
+  safe_for_print?: boolean;
+  [key: string]: unknown;
+}
+
+export interface DesignAsset {
+  id: string;
+  company_id: string;
+  brand_kit_id: string;
+  file_id: string;
+  asset_type: AssetType;
+  usage_status: AssetUsageStatus;
+  metadata: AssetMetadata;
+  file_url?: string;
+  created_by: string;
+  created_at: string;
+}
+
 // ─── Commerce Catalog ────────────────────────────────────────────────────────
 
 export interface Product {
@@ -316,6 +341,7 @@ export interface CollectionTypeMap {
   companies: Company;
   company_users: CompanyUser;
   brand_kits: BrandKit;
+  design_assets: DesignAsset;
   products: Product;
   product_variants: ProductVariant;
   campaigns: Campaign;

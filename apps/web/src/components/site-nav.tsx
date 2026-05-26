@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "@/components/auth-provider";
+import { useAuth } from "@zeromerch/auth";
 
 const navLinks = [
   { href: "/store", label: "Store" },
